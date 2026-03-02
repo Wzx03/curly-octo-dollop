@@ -1,4 +1,0 @@
-{
-    "java.compile.nullAnalysis.mode": "automatic",
-    "go.toolsManagement.checkForUpdates": "proxy"
-}
