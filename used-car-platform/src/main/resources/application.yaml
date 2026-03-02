@@ -1,0 +1,48 @@
+# 端口配置
+server:
+  port: 8080
+spring:
+  application:
+    name: used-car-platform
+
+  # 数据库配置 (请确认下方密码是否正确)
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/used_car_platform?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useSSL=false
+    username: root
+    password: Wzx031017
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # 核心配置：自动更新表结构
+    show-sql: true      # 在控制台打印 SQL，方便调试
+    properties:
+      hibernate:
+        format_sql: true # 格式化打印的 SQL，更好看
+        dialect: org.hibernate.dialect.MySQLDialect # 指定 MySQL 方言
+
+  # 👇 新增 Redis 配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      # password:  # 如果有密码，请取消注释并填写
+
+  # 必须加上这个，否则 LocalDateTime 在 JSON 里会变成数组
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+# MyBatis Plus 配置
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    # 开启驼峰命名自动转换 (user_name -> userName)
+    map-underscore-to-camel-case: true
+    # 打印 SQL 日志 (方便调试)
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 自定义文件上传路径
+file:
+  upload-path: D:/used-car-upload/ # 记得最后带斜杠

@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 1. 强制去除浏览器默认边距 */
+html,
+body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100%;
+    height: 100%;
+    /* overflow: hidden;  <-- 移除此行，防止某些情况下无法滚动，由 Layout.vue 控制滚动 */
+    font-family: 'Circular', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+    background-color: #f0f2f5; /* 统一背景色为浅灰，避免白色缝隙 */
+    color: #222;
+}
+
+/* 2. 让 Vue 的根节点占满全屏 */
+#app {
+    width: 100%;
+    height: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    text-align: left !important;
+}
+
+/* 3. 修复 Element Plus 盒模型 */
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+}
+
+/* =================================================================
+   👇 Airbnb 风格全局覆盖 (Element Plus)
+   ================================================================= */
+
+/* 1. 弹窗 (Dialog) */
+.el-dialog {
+    border-radius: 12px !important;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28) !important;
+    overflow: hidden; /* 确保圆角不被内容遮挡 */
+}
+
+.el-dialog__header {
+    padding: 20px 24px !important;
+    margin: 0 !important;
+    border-bottom: 1px solid #ebebeb;
+    display: flex;
+    align-items: center;
+}
+
+.el-dialog__title {
+    font-weight: 800 !important;
+    font-size: 16px !important;
+    color: #222 !important;
+    line-height: 1.25 !important;
+}
+
+.el-dialog__headerbtn {
+    top: 0 !important;
+    bottom: 0 !important;
+    margin: auto !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50%;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.el-dialog__headerbtn:hover {
+    background-color: #f7f7f7;
+}
+.el-dialog__headerbtn .el-dialog__close {
+    color: #222 !important;
+    font-size: 16px !important;
+}
+
+.el-dialog__body {
+    padding: 24px !important;
+    color: #222 !important;
+    font-size: 16px !important;
+}
+
+.el-dialog__footer {
+    padding: 16px 24px !important;
+    border-top: 1px solid #ebebeb;
+}
+
+/* 2. 消息弹窗 (MessageBox) */
+.el-message-box {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28) !important;
+    padding-bottom: 24px !important;
+    width: 400px !important;
+}
+
+.el-message-box__header {
+    padding: 24px 24px 0 !important;
+}
+
+.el-message-box__title {
+    font-weight: 800 !important;
+    font-size: 18px !important;
+}
+
+.el-message-box__content {
+    padding: 12px 24px !important;
+    font-size: 16px !important;
+    color: #717171 !important;
+}
+
+.el-message-box__btns {
+    padding: 24px 24px 0 !important;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* 3. 按钮 (Button) */
+.el-button {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    height: 40px !important; /* 稍微高一点 */
+    padding: 10px 20px !important;
+}
+
+.el-button--primary {
+    background-color: #FF385C !important;
+    border-color: #FF385C !important;
+}
+.el-button--primary:hover,
+.el-button--primary:focus {
+    background-color: #E00B41 !important;
+    border-color: #E00B41 !important;
+}
+
+/* 4. 消息提示 (Message) */
+.el-message {
+    border-radius: 8px !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+    border: none !important;
+    padding: 12px 20px !important;
+    min-width: 300px !important;
+}
+.el-message--success {
+    background-color: #fff !important;
+    color: #222 !important;
+    border-left: 4px solid #16a34a !important;
+}
+.el-message--error {
+    background-color: #fff !important;
+    color: #222 !important;
+    border-left: 4px solid #c13515 !important;
+}
+.el-message--warning {
+    background-color: #fff !important;
+    color: #222 !important;
+    border-left: 4px solid #e6a23c !important;
+}
+.el-message .el-message__icon {
+    font-size: 18px !important;
+}
+
+/* 5. 输入框 (Input) */
+.el-input__wrapper {
+    border-radius: 8px !important;
+    box-shadow: 0 0 0 1px #b0b0b0 inset !important;
+    padding: 4px 12px !important;
+}
+.el-input__wrapper.is-focus {
+    box-shadow: 0 0 0 2px #222 inset !important;
+}
