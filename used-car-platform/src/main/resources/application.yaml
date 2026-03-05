@@ -47,11 +47,12 @@ mybatis-plus:
 file:
   upload-path: D:/used-car-upload/ # 记得最后带斜杠
 
-  # AI 网关配置 (通义千问)
-
-# AI 大模型配置 (连接到你的阿里云 OpenClaw)
+# AI 网关配置 (连接到你的阿里云 OpenClaw)
 ai:
-  openai:
-    base-url: http://47.86.46.234:18789/v1
-    api-key: 123
+  gateway:
+    # 1. 必须包含 /v1/chat/completions，因为 AiValuationClient 直接 post 这个地址
+    url: http://47.86.46.234:18789/v1/chat/completions
+    # 2. 这里的 token 对应你 OpenClaw 配置中的 gateway.auth.token
+    token: 123
+    # 3. 必须与 OpenClaw 配置中的 agents.defaults.model.primary 保持一致
     model: qwen/qwen-plus
