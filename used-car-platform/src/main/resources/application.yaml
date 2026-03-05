@@ -46,3 +46,13 @@ mybatis-plus:
 # 自定义文件上传路径
 file:
   upload-path: D:/used-car-upload/ # 记得最后带斜杠
+
+  # AI 网关配置 (通义千问)
+
+ai:
+  gateway:
+    # 删掉路径里的 /v1 试试
+    url: http://47.86.46.234:18789/chat/completions
+    # 确保这里的 token 和你网页上看到的 JSON 里的 token 一字不差
+    token: 123
+    model: aliyun/qwen-plus
