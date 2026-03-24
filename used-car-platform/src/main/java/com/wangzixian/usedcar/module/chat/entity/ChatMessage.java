@@ -22,9 +22,14 @@ public class ChatMessage {
     private Long receiverId;
     private String content;
     private Long carId;
-    
-    // 👇 新增消息类型: 1-文本, 2-图片, 3-视频, 4-文件
+
+    // 👇 扩充消息类型: 1-文本, 2-图片, 3-视频, 4-文件, 10-AI客服问答, 11-AI估价卡片
     private Integer type;
+
+    // 👇 新增字段：用于对接大模型的角色隔离
+    // 枚举值: user(用户提问), assistant(AI回复), system(系统提示词)
+    @Column(name = "role", length = 20)
+    private String role;
 
     private Integer isRead;
     private LocalDateTime createTime;

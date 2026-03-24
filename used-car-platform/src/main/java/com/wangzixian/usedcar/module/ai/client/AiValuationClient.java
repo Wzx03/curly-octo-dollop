@@ -5,13 +5,13 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Map;
 
 @Component
 public class AiValuationClient {
 
-    // 赋予默认值，防止配置文件读取失败导致启动报错
     @Value("${ai.gateway.url:http://localhost:18789/v1/chat/completions}")
     private String gatewayUrl;
 
@@ -21,16 +21,28 @@ public class AiValuationClient {
     @Value("${ai.gateway.model:aliyun/qwen-plus}")
     private String model;
 
+    // 原有的估价单轮生成方法保持不变
     public String generateReport(String systemPrompt, String userPrompt) {
-        // 1. 将变量名从 body 改为 requestJson，避免跟 Hutool 的方法名冲突
+        // ... (保持你原有的代码不变)
         JSONObject requestJson = JSONUtil.createObj()
                 .set("model", model)
                 .set("messages", List.of(
                         Map.of("role", "system", "content", systemPrompt),
                         Map.of("role", "user", "content", userPrompt)
                 ));
+        return executeAiRequest(requestJson);
+    }
 
-        // ... 前面代码保持不变 ...
+    // 👇 新增方法：支持多轮上下文聊天的接口调用
+    public String chatWithHistory(List<Map<String, String>> messages) {
+        JSONObject requestJson = JSONUtil.createObj()
+                .set("model", model)
+                .set("messages", messages);
+        return executeAiRequest(requestJson);
+    }
+
+    // 抽离公共的网络请求逻辑
+    private String executeAiRequest(JSONObject requestJson) {
         try {
             String responseStr = HttpRequest.post(gatewayUrl)
                     .header("Authorization", "Bearer " + gatewayToken)
@@ -38,9 +50,6 @@ public class AiValuationClient {
                     .execute()
                     .body();
 
-            System.out.println("AI原始返回内容：" + responseStr);
-
-            // 👇 关键：先判断返回的是不是 JSON，如果不是，直接把原始内容显示出来
             if (!JSONUtil.isTypeJSON(responseStr)) {
                 return "网关配置异常，原始回复为：" + responseStr;
             }
@@ -51,9 +60,7 @@ public class AiValuationClient {
                     .getJSONObject("message")
                     .getStr("content");
         } catch (Exception e) {
-            System.out.println("最终请求地址：" + gatewayUrl);
-            return "调用发生异常：" + e.getMessage();
+            return "AI调用发生异常：" + e.getMessage();
         }
-
     }
 }
