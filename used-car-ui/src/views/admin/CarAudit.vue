@@ -3,12 +3,12 @@
     <el-card>
       <div slot="header" class="card-header">
         <span style="font-weight: bold; font-size: 18px">🚙 车辆发布审核</span>
-        
+
         <div class="header-actions">
           <!-- 👇 批量下架按钮 -->
-          <el-button 
-            type="danger" 
-            plain 
+          <el-button
+            type="danger"
+            plain
             :disabled="selectedIds.length === 0"
             @click="handleBatchOffShelf"
             style="margin-right: 10px"
@@ -26,28 +26,28 @@
           >
             <el-button type="warning" icon="Upload">批量导入</el-button>
           </el-upload>
-          
+
           <el-button icon="Refresh" circle @click="loadData"></el-button>
         </div>
       </div>
 
-      <el-table 
-        :data="tableData" 
-        border 
-        stripe 
-        v-loading="loading" 
+      <el-table
+        :data="tableData"
+        border
+        stripe
+        v-loading="loading"
         style="margin-top: 20px"
         @selection-change="handleSelectionChange"
       >
         <!-- 👇 多选框 -->
         <el-table-column type="selection" width="55" />
-        
+
         <el-table-column prop="id" label="ID" width="60" />
-        
+
         <el-table-column label="车辆图片" width="120">
           <template #default="{row}">
-            <el-image 
-              :src="row.image || 'https://dummyimage.com/100x100/eee/999'" 
+            <el-image
+              :src="row.image || 'https://dummyimage.com/100x100/eee/999'"
               :preview-src-list="[row.image]"
               style="width: 80px; height: 60px; border-radius: 4px"
               fit="cover"
@@ -74,7 +74,7 @@
         <el-table-column prop="createTime" label="发布时间" width="170">
           <template #default="{row}">{{ formatTime(row.createTime) }}</template>
         </el-table-column>
-        
+
         <el-table-column label="状态" width="100">
           <template #default="{row}">
             <el-tag v-if="row.status === 0">待审核</el-tag>
@@ -94,10 +94,10 @@
       </el-table>
 
       <div style="margin-top: 20px; text-align: right">
-        <el-pagination 
-          background 
-          layout="prev, pager, next" 
-          :total="total" 
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="total"
           :page-size="10"
           @current-change="handlePageChange"
         />
@@ -163,7 +163,7 @@ const handleImport = async (options) => {
     loadingInstance.close()
     if (res.data.code === 200) {
       ElMessage.success(res.data.data || '导入成功')
-      loadData() 
+      loadData()
     } else {
       ElMessage.error(res.data.message)
     }

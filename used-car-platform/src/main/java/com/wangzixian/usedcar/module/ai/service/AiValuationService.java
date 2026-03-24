@@ -1,6 +1,6 @@
-package com.wangzixian.usedcar.module.car.service;
+package com.wangzixian.usedcar.module.ai.service;
 
-import com.wangzixian.usedcar.module.car.component.AiValuationClient;
+import com.wangzixian.usedcar.module.ai.client.AiValuationClient;
 import com.wangzixian.usedcar.module.car.entity.Car;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -30,7 +30,7 @@ public class User implements Serializable {
     private String avatar;
     private Double balance;
     
-    // 👇 新增手机号字段
+
     private String phone;
 
     private LocalDateTime createTime;

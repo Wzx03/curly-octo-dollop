@@ -1,7 +1,6 @@
 <template>
   <div class="airbnb-list-container">
-    
-    <!-- 1. 可收纳的筛选面板 (悬浮在顶部) -->
+
     <div class="filter-panel-wrapper" v-show="globalState.showFilter">
       <div class="filter-panel">
         <CarFilterBar @change="handleFilterChange" />
@@ -13,71 +12,66 @@
       <div class="filter-mask" @click="globalState.showFilter = false"></div>
     </div>
 
-    <!-- 2. 推荐车源 (横向滚动 + 交互优化) -->
     <div class="section-wrapper" v-if="recommendList.length > 0">
-      <!-- 头部：标题 + 导航按钮 -->
       <div class="section-header-flex">
         <div class="clickable-header" @click="handleRecommendClick">
           <h2>{{ $t('car.recommend_title') }}</h2>
           <el-icon class="header-arrow"><ArrowRight /></el-icon>
         </div>
-        
-        <!-- 导航按钮组 -->
+
         <div class="nav-controls">
-          <button 
-            class="nav-btn" 
-            :disabled="!showLeftBtn"
-            @click="scroll('left')"
+          <button
+              class="nav-btn"
+              :disabled="!showLeftBtn"
+              @click="scroll('left')"
           >
             <el-icon><ArrowLeft /></el-icon>
           </button>
-          <button 
-            class="nav-btn" 
-            :disabled="!showRightBtn"
-            @click="scroll('right')"
+          <button
+              class="nav-btn"
+              :disabled="!showRightBtn"
+              @click="scroll('right')"
           >
             <el-icon><ArrowRight /></el-icon>
           </button>
         </div>
       </div>
-      
+
       <div class="carousel-wrapper">
-        <!-- 滚动容器 -->
-        <div 
-          class="scroll-container" 
-          ref="scrollContainerRef"
-          @scroll="checkScroll"
+        <div
+            class="scroll-container"
+            ref="scrollContainerRef"
+            @scroll="checkScroll"
         >
-          <div 
-            v-for="car in recommendList" 
-            :key="'rec-'+car.id" 
-            class="carousel-item"
+          <div
+              v-for="car in recommendList"
+              :key="'rec-'+car.id"
+              class="carousel-item"
           >
-            <CarCard 
-              :data="car" 
-              :is-favorited="isFavorited(car.id)"
-              @click="toDetail(car.id)" 
-              @toggle-favorite="toggleFavorite(car.id)"
+            <CarCard
+                :data="car"
+                :is-favorited="isFavorited(car.id)"
+                :recommend-tag="car.recommendTag"
+                @click="toDetail(car.id)"
+                @toggle-favorite="toggleFavorite(car.id)"
             />
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 3. 全部车源网格 (恢复原样) -->
     <div class="section-wrapper">
       <div class="section-header">
         <h2>{{ $t('car.all_cars_title') }}</h2>
       </div>
-      
-      <!-- 👇 强制内联样式：7列网格 (加 !important) -->
+
       <div style="display: grid !important; grid-template-columns: repeat(7, 1fr) !important; gap: 16px !important; width: 100% !important;">
         <div v-for="car in carList" :key="car.id" class="car-card">
           <div class="img-container" @click="toDetail(car.id)">
             <img :src="car.image || 'https://dummyimage.com/600x400/eee/999'" class="car-img" />
-            
+
             <div class="heart-btn" @click.stop="toggleFavorite(car.id)">
-              <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="presentation" focusable="false" 
+              <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="presentation" focusable="false"
                    :class="['heart-svg', { 'is-favorited': isFavorited(car.id) }]">
                 <path d="m16 28c7-4.733 14-10 14-17 0-1.792-.683-3.583-2.05-4.95-1.367-1.366-3.158-2.05-4.95-2.05-1.791 0-3.583.684-4.949 2.05l-2.051 2.051-2.05-2.051c-1.367-1.366-3.158-2.05-4.95-2.05-1.791 0-3.583.684-4.949 2.05-1.367 1.367-2.051 3.158-2.051 4.95 0 7 7 12.267 14 17z"></path>
               </svg>
@@ -101,18 +95,17 @@
           </div>
         </div>
       </div>
-      
+
       <el-empty v-if="carList.length === 0" :description="$t('car.no_cars_found')" />
 
-      <!-- 👇 新增分页组件 -->
       <div class="pagination-container" v-if="total > 0">
         <el-pagination
-          background
-          layout="prev, pager, next"
-          :total="total"
-          :page-size="pageSize"
-          :current-page="currentPage"
-          @current-change="handlePageChange"
+            background
+            layout="prev, pager, next"
+            :total="total"
+            :page-size="pageSize"
+            :current-page="currentPage"
+            @current-change="handlePageChange"
         />
       </div>
     </div>
@@ -156,8 +149,8 @@ watch(() => globalState.searchKeyword, () => {
 
 const loadCars = async () => {
   try {
-    const params = { 
-      ...filterParams.value, 
+    const params = {
+      ...filterParams.value,
       brand: globalState.searchKeyword,
       page: currentPage.value,
       size: pageSize.value
@@ -180,14 +173,31 @@ const loadCars = async () => {
 
 const loadRecommend = async () => {
   const token = getToken()
-  if (!token) return 
+  if (!token) return
 
   try {
     const res = await axios.get('/api/car/recommend', {
       headers: { token: token }
     })
     if (res.data.code === 200) {
-      recommendList.value = res.data.data.slice(0, 14)
+      const list = res.data.data.slice(0, 14)
+
+      // 👇👇 真实数据逻辑：找出这批推荐中，真实浏览量(views)最高的 Top 3 车辆 👇👇
+      const sortedByViews = [...list].sort((a, b) => (b.views || 0) - (a.views || 0))
+      // 获取前三名的 ID（前提是它们真的有浏览量）
+      const top3ViewIds = new Set(
+          sortedByViews.slice(0, 3)
+              .filter(c => (c.views || 0) > 0)
+              .map(c => c.id)
+      )
+
+      // 为车辆动态附加标签属性
+      recommendList.value = list.map(car => ({
+        ...car,
+        // 如果是 Top 3 的车，就给它贴上皇冠金标
+        recommendTag: top3ViewIds.has(car.id) ? '👑 本周浏览最多' : null
+      }))
+
       nextTick(() => checkScroll())
     }
   } catch (e) {}
@@ -255,9 +265,9 @@ const scroll = (direction) => {
   const container = scrollContainerRef.value
   if (!container) return
   const scrollAmount = container.clientWidth
-  const targetScrollLeft = direction === 'left' 
-    ? container.scrollLeft - scrollAmount 
-    : container.scrollLeft + scrollAmount
+  const targetScrollLeft = direction === 'left'
+      ? container.scrollLeft - scrollAmount
+      : container.scrollLeft + scrollAmount
   container.scrollTo({ left: targetScrollLeft, behavior: 'smooth' })
 }
 
@@ -419,12 +429,12 @@ onMounted(() => {
   max-width: calc((100% - 96px) / 7);
 }
 
-.car-card { 
-  cursor: default; /* Remove cursor from the whole card */
+.car-card {
+  cursor: default;
   transition: transform 0.2s, box-shadow 0.2s;
   border-radius: 12px;
-  width: auto; 
-  min-width: 0; 
+  width: auto;
+  min-width: 0;
 }
 .car-card:hover {
   transform: translateY(-4px);
@@ -438,15 +448,15 @@ onMounted(() => {
   overflow: hidden;
   background: #f5f5f5;
   margin-bottom: 12px;
-  cursor: pointer; /* Add cursor only to image and info */
+  cursor: pointer;
 }
 .car-img { width: 100%; height: 100%; object-fit: cover; }
 
-.heart-btn { 
-  position: absolute; 
-  top: 12px; 
-  right: 12px; 
-  z-index: 2; 
+.heart-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
   cursor: pointer;
   width: 32px;
   height: 32px;
@@ -472,34 +482,34 @@ onMounted(() => {
   stroke: #FF385C;
 }
 
-.super-host { 
-  position: absolute; 
-  top: 12px; 
-  left: 12px; 
-  background: rgba(255, 255, 255, 0.95); 
-  padding: 4px 8px; 
-  border-radius: 4px; 
-  font-size: 12px; 
-  font-weight: bold; 
+.super-host {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
   color: #222;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .info-container { color: #222; padding: 0 4px; cursor: pointer; }
 
-.row-1 { 
-  display: flex; 
-  justify-content: space-between; 
+.row-1 {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 4px; 
+  margin-bottom: 4px;
 }
-.title { 
+.title {
   font-weight: 700;
-  font-size: 16px; 
+  font-size: 16px;
   color: #222;
-  white-space: nowrap; 
-  overflow: hidden; 
-  text-overflow: ellipsis; 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .rating {
   display: flex;
@@ -509,10 +519,10 @@ onMounted(() => {
   color: #222;
 }
 
-.row-2 { 
+.row-2 {
   color: #717171;
-  font-size: 14px; 
-  margin-bottom: 6px; 
+  font-size: 14px;
+  margin-bottom: 6px;
   display: flex;
   justify-content: space-between;
   align-items: center;

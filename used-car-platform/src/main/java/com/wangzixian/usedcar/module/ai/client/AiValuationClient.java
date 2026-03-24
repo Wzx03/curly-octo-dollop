@@ -1,4 +1,4 @@
-package com.wangzixian.usedcar.module.car.component;
+package com.wangzixian.usedcar.module.ai.client;
 
 import cn.hutool.http.HttpRequest;
 import cn.hutool.json.JSONObject;

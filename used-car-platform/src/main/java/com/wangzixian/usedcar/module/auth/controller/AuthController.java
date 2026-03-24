@@ -5,6 +5,7 @@ import com.wangzixian.usedcar.module.auth.dto.LoginDTO;
 import com.wangzixian.usedcar.module.auth.dto.RegisterDTO;
 import com.wangzixian.usedcar.module.auth.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,7 +21,7 @@ public class AuthController {
      * POST /api/auth/login
      */
     @PostMapping("/login")
-    public Result<String> login(@RequestBody LoginDTO loginDTO) {
+    public Result<String> login(@Validated @RequestBody LoginDTO loginDTO) {
         // 调用业务层，获取 Token
         String token = authService.login(loginDTO);
         // 返回给前端

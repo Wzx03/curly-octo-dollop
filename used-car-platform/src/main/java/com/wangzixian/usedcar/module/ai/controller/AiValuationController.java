@@ -1,9 +1,9 @@
-package com.wangzixian.usedcar.module.car.controller;
+package com.wangzixian.usedcar.module.ai.controller;
 
 import com.wangzixian.usedcar.common.Result;
 import com.wangzixian.usedcar.common.annotation.Log;
 import com.wangzixian.usedcar.module.car.entity.Car;
-import com.wangzixian.usedcar.module.car.service.AiValuationService;
+import com.wangzixian.usedcar.module.ai.service.AiValuationService;
 import com.wangzixian.usedcar.module.car.service.CarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
