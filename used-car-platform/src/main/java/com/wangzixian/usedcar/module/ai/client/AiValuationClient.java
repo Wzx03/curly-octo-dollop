@@ -23,7 +23,6 @@ public class AiValuationClient {
 
     // 原有的估价单轮生成方法保持不变
     public String generateReport(String systemPrompt, String userPrompt) {
-        // ... (保持你原有的代码不变)
         JSONObject requestJson = JSONUtil.createObj()
                 .set("model", model)
                 .set("messages", List.of(
@@ -33,7 +32,7 @@ public class AiValuationClient {
         return executeAiRequest(requestJson);
     }
 
-    // 👇 新增方法：支持多轮上下文聊天的接口调用
+    // 新增方法：支持多轮上下文聊天的接口调用
     public String chatWithHistory(List<Map<String, String>> messages) {
         JSONObject requestJson = JSONUtil.createObj()
                 .set("model", model)

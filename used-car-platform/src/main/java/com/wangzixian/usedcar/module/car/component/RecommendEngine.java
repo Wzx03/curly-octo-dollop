@@ -38,18 +38,14 @@ public class RecommendEngine {
         for (Car car : candidates) {
             // 过滤掉自己发布的
             if (car.getUserId().equals(userId)) continue;
-
             double score = 0.0;
-
             // --- 基础分：热度 + 新鲜度 ---
             // 热度分：浏览量 * 0.5
             score += (car.getViews() == null ? 0 : car.getViews()) * 0.5;
-            
             // 新鲜度分：最近 7 天发布的 +20 分
             if (car.getCreateTime().isAfter(java.time.LocalDateTime.now().minusDays(7))) {
                 score += 20;
             }
-
             // --- 个性化分 (仅老用户) ---
             if (!isNewUser) {
                 // 1. 品牌匹配 (+50分)
@@ -57,7 +53,6 @@ public class RecommendEngine {
                 if (favBrand != null && favBrand.equals(car.getBrand())) {
                     score += 50;
                 }
-
                 // 2. 价格匹配 (+30分)
                 // 如果价格在用户偏好均价的 ±20% 范围内
                 Double avgPrice = (Double) profile.get("avgPrice");
@@ -68,7 +63,6 @@ public class RecommendEngine {
                     }
                 }
             }
-
             // --- 随机扰动 (0-5分) ---
             // 防止每次推荐顺序完全一样
             score += Math.random() * 5;

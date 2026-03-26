@@ -25,21 +25,16 @@ public class AuthServiceImpl implements AuthService {
         if (loginDTO.getUsername() == null || loginDTO.getPassword() == null) {
             throw new RuntimeException("账号或密码不能为空");
         }
-
         QueryWrapper<User> query = new QueryWrapper<>();
         query.eq("username", loginDTO.getUsername());
         User user = userMapper.selectOne(query);
-
         if (user == null) {
             throw new RuntimeException("账号不存在");
         }
-
         boolean check = BCrypt.checkpw(loginDTO.getPassword(), user.getPassword());
         if (!check) {
             throw new RuntimeException("密码错误");
         }
-
-        // 👇 传入 role
         return JwtUtils.createToken(user.getId(), user.getUsername(), user.getRole());
     }
 

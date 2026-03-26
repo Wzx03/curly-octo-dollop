@@ -33,10 +33,8 @@ public class ValuationEngine {
             BigDecimal factor = strategy.calculateFactor(car);
             finalFactor = finalFactor.multiply(factor);
         }
-        
         // 基础估价 = 新车价 * 综合系数
         BigDecimal basePrice = BigDecimal.valueOf(car.getOriginalPrice()).multiply(finalFactor);
-
         // --- 步骤B: 车况微调 (Condition Adjustment) ---
         // 1-极品(1.05), 2-良好(1.0), 3-一般(0.9)
         double conditionFactor = 1.0;
@@ -45,10 +43,8 @@ public class ValuationEngine {
             else if (car.getConditionLevel() == 3) conditionFactor = 0.90;
         }
         basePrice = basePrice.multiply(BigDecimal.valueOf(conditionFactor));
-
         // --- 步骤C: 市场比价 (Market Price) ---
         Double avgPrice = getMarketAvgPrice(car);
-
         // --- 步骤D: 混合计算 (Hybrid Calculation) ---
         BigDecimal finalPrice;
         if (avgPrice != null && avgPrice > 0) {
@@ -60,13 +56,11 @@ public class ValuationEngine {
             // 无市场参考：直接用 Base Price
             finalPrice = basePrice;
         }
-
         // 兜底逻辑 (最低 5%)
         BigDecimal minPrice = BigDecimal.valueOf(car.getOriginalPrice() * 0.05);
         if (finalPrice.compareTo(minPrice) < 0) {
             finalPrice = minPrice;
         }
-
         return finalPrice.setScale(1, RoundingMode.HALF_UP).doubleValue();
     }
 
@@ -78,7 +72,6 @@ public class ValuationEngine {
         if (car.getBrand() == null || car.getModel() == null || car.getBuyYear() == null) {
             return null;
         }
-
         QueryWrapper<Car> query = new QueryWrapper<>();
         query.eq("status", 1); // 只看在售的
         query.eq("brand", car.getBrand());
@@ -91,12 +84,10 @@ public class ValuationEngine {
         if (car.getId() != null) {
             query.ne("id", car.getId());
         }
-
         List<Car> marketCars = carMapper.selectList(query);
         if (marketCars.isEmpty()) {
             return null;
         }
-
         // 计算平均价
         double total = marketCars.stream()
                 .map(c -> c.getPrice() != null ? c.getPrice().doubleValue() : 0.0)
