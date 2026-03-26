@@ -38,4 +38,6 @@ public class User implements Serializable {
 
     // 逻辑删除字段 (查询时会自动忽略该值为 1 的记录)
     private Integer deleted;
+    // 0-正常, 1-封禁
+    private Integer status = 0;
 }

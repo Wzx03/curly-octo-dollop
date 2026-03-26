@@ -22,12 +22,16 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String login(LoginDTO loginDTO) {
+
         if (loginDTO.getUsername() == null || loginDTO.getPassword() == null) {
             throw new RuntimeException("账号或密码不能为空");
         }
         QueryWrapper<User> query = new QueryWrapper<>();
         query.eq("username", loginDTO.getUsername());
         User user = userMapper.selectOne(query);
+        if (user.getStatus() != null && user.getStatus() == 1) {
+            throw new RuntimeException("您的账号已被封禁，请联系管理员");
+        }
         if (user == null) {
             throw new RuntimeException("账号不存在");
         }

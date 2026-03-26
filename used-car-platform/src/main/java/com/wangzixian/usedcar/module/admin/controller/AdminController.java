@@ -7,6 +7,8 @@ package com.wangzixian.usedcar.module.admin.controller;
 import com.wangzixian.usedcar.common.Result;
 import com.wangzixian.usedcar.module.car.entity.Car;
 import com.wangzixian.usedcar.module.car.service.CarService;
+import com.wangzixian.usedcar.module.user.entity.User;
+import com.wangzixian.usedcar.module.user.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +20,8 @@ public class AdminController {
 
     @Autowired
     private CarService carService;
-
+    @Autowired
+    private UserMapper userMapper;
     // 1. 获取所有"待审核"的车辆
     @GetMapping("/pending-cars")
     public Result<List<Car>> getPendingCars() {
@@ -55,5 +58,19 @@ public class AdminController {
         carService.updateById(car);
 
         return Result.success("已驳回");
+    }
+    //  2. 修改封禁/解封接口代码
+    @PostMapping("/user/status")
+    public Result<String> updateUserStatus(@RequestParam Long userId, @RequestParam Integer status) {
+        // 使用 userMapper.selectById 代替 userService.getById
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+
+        user.setStatus(status);
+        userMapper.updateById(user);
+
+        return Result.success(status == 1 ? "封禁成功" : "解封成功");
     }
 }
