@@ -44,6 +44,7 @@ public class AdminController {
         return Result.success("审核通过，已上架！");
     }
 
+
     // 3. 审核拒绝/下架接口
     @PostMapping("/reject")
     public Result<String> reject(@RequestParam Long carId) {

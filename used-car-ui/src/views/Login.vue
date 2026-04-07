@@ -7,7 +7,7 @@
 
       <div class="hidden md:flex flex-col justify-center items-center w-1/2 bg-gradient-to-br from-blue-300 to-indigo-800 text-white p-10 relative overflow-hidden">
         <img
-            src="https://images.unsplash.com/photo-1583121274602-3e2820c69888?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+            src="https://th.bing.com/th/id/R.bfc349fbd504dcb008e7103ad2df8326?rik=o4vMYlB4xKmVZg&riu=http%3a%2f%2f5b0988e595225.cdn.sohucs.com%2fimages%2f20190617%2fa8f19348d4cf40d299f25929434956c5.jpeg&ehk=8mMvAjS6KRSQsP%2fnxDCOhSXRmDI%2bSwj8cS125Axwj1k%3d&risl=&pid=ImgRaw&r=0"
             alt="Car Background"
             class="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-overlay"
         />
