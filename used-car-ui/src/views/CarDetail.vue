@@ -24,7 +24,7 @@
       <!-- 右侧：核心信息 & 估价 -->
       <div class="info-section">
         <h1 class="car-title">{{ car.brand }} {{ car.model }}</h1>
-        
+
         <div class="tags-row">
           <el-tag effect="plain" type="info">{{ car.buyYear }}{{ $t('car.year') }}</el-tag>
           <el-tag effect="plain" type="info">{{ car.mileage }}{{ $t('car.mileage_unit') }}</el-tag>
@@ -39,27 +39,27 @@
             <span class="current-price">{{ formatPrice(car.price) }}</span>
             <span class="original-price">{{ $t('car_detail.basic_info') }}: {{ formatPrice(car.originalPrice) }}</span>
           </div>
-          
+
           <!-- 智能估价核心模块 (CSS 进度条版) -->
           <div class="valuation-box">
             <div class="val-header">
               <span class="val-title">
                 <el-icon color="#67C23A"><TrendCharts /></el-icon>
-                AI 智能估价
+                 系统参考估价
               </span>
               <span class="val-num">{{ formatPrice(car.estimatedPrice) }}</span>
             </div>
-            
+
             <!-- 价格对比条 -->
             <div class="price-bar-wrapper">
               <div class="bar-bg"></div>
-              
+
               <!-- 估价点 (基准) -->
               <div class="bar-point estimate" style="left: 50%">
                 <div class="point-dot"></div>
                 <div class="point-label"></div>
               </div>
-              
+
               <!-- 报价点 (动态) -->
               <div class="bar-point current" :style="{ left: getPricePosition(car.price, car.estimatedPrice) }">
                 <div class="point-dot"></div>
@@ -91,11 +91,41 @@
         </div>
       </div>
     </div>
+    <div class="ai-valuation-section mt-8 border-t border-gray-100 pt-6">
+      <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center">
+        <span class="text-purple-600 mr-2 text-xl">✨</span> AI 智能评估
+      </h3>
+
+      <!-- 状态 1：未生成报告，显示获取按钮 -->
+      <div v-if="!aiReport">
+        <button
+            @click="generateAiReport"
+            :disabled="isGeneratingAi"
+            class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center transition-all duration-300"
+            :class="{ 'opacity-70 cursor-not-allowed': isGeneratingAi }"
+        >
+          <el-icon v-if="isGeneratingAi" class="is-loading mr-2"><Loading /></el-icon>
+          <span v-else class="mr-2">🤖</span>
+          {{ isGeneratingAi ? 'AI 正在深度分析车况特征，请稍候...' : '免费获取 AI 智能估价报告' }}
+        </button>
+      </div>
+
+      <!-- 状态 2：报告已生成，显示结果卡片 -->
+      <div v-else class="bg-purple-50 p-5 rounded-lg border border-purple-100 shadow-sm transition-all duration-500 ease-in-out">
+        <h4 class="text-purple-800 font-bold mb-3 flex items-center border-b border-purple-200 pb-2">
+          <span class="mr-2 text-lg">📝</span> 评估报告已生成
+        </h4>
+        <!-- 使用 whitespace-pre-wrap 完美保留大模型返回的换行排版格式 -->
+        <div class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap font-sans">
+          {{ aiReport }}
+        </div>
+      </div>
+    </div>
 
     <!-- 3. 详细参数 & 描述 & 保值率 -->
     <div class="detail-tabs-wrapper">
       <el-tabs v-model="activeTab" class="detail-tabs">
-        
+
         <!-- Tab 1: 基本信息 -->
         <el-tab-pane :label="$t('car_detail.basic_info')" name="specs">
           <div class="specs-container">
@@ -254,7 +284,7 @@ import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import * as echarts from 'echarts'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { 
+import {
   ArrowRight, TrendCharts, Select, ChatDotRound, ZoomIn,
   Van, Odometer, Connection, Aim, Sunny, Brush, Timer, Lightning, // 👈 修复：引入 Sunny
   CircleCheckFilled, Check, Warning
@@ -356,7 +386,7 @@ const getAnalysisText = (price, estimate) => {
   const ratio = price / estimate
   const diff = Math.abs(estimate - price)
   const diffStr = formatPrice(diff, false)
-  
+
   if (ratio < 0.95) return `低于估值 ${formatPrice(diff)}，超值推荐！`
   if (ratio > 1.05) return `高于估值 ${formatPrice(diff)}，建议议价`
   return `价格合理，符合市场行情`
@@ -373,11 +403,11 @@ const getAnalysisClass = (price, estimate) => {
 const initTrendChart = () => {
   if (!trendChartRef.value) return
   trendChart = echarts.init(trendChartRef.value)
-  
+
   const currentVal = getPriceValue(car.value.estimatedPrice)
   const years = ['Now', '1 Year', '2 Years', '3 Years', '4 Years', '5 Years']
   const data = []
-  
+
   // 模拟折旧算法：每年递减 12%
   for (let i = 0; i < 6; i++) {
     data.push((currentVal * Math.pow(0.88, i)).toFixed(1))
@@ -389,23 +419,23 @@ const initTrendChart = () => {
   trendChart.setOption({
     tooltip: { trigger: 'axis' },
     grid: { top: '15%', left: '1%', right: '3%', bottom: '5%', containLabel: true },
-    xAxis: { 
-      type: 'category', 
+    xAxis: {
+      type: 'category',
       data: years,
-      boundaryGap: false, 
+      boundaryGap: false,
       axisLine: { lineStyle: { color: '#999' } }
     },
-    yAxis: { 
-      type: 'value', 
+    yAxis: {
+      type: 'value',
       name: t('car.price_unit'),
-      min: minVal, 
+      min: minVal,
       splitLine: { lineStyle: { type: 'dashed' } }
     },
     series: [{
       data: data,
       type: 'line',
       smooth: true,
-      symbolSize: 8, 
+      symbolSize: 8,
       lineStyle: { color: '#409EFF', width: 4 },
       areaStyle: {
         color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -446,6 +476,48 @@ watch([locale, currentCurrency], () => {
   }
 })
 
+const isGeneratingAi = ref(false)
+const aiReport = ref('')
+
+const generateAiReport = async () => {
+  // 1. 拦截空数据
+  if (!car.value || !car.value.id) {
+    ElMessage.warning('车辆数据尚未加载完毕，请稍后再试')
+    return
+  }
+
+  // 2. 拦截未登录白嫖
+  const token = localStorage.getItem('token')
+  if (!token) {
+    ElMessage.warning('请先登录系统后再获取估价报告')
+    router.push('/login')
+    return
+  }
+
+  isGeneratingAi.value = true
+  try {
+// ✅ 正确代码（完全匹配你的真实控制器逻辑）：
+    const response = await axios.get(`/api/car/ai/report/${car.value.id}`, {
+      headers: { Authorization: token }
+    })
+
+    const res = response.data
+
+    // 4. 解析后端返回的结果
+    if (res.code === 200) {
+      aiReport.value = res.data
+      ElMessage.success('AI 评估报告生成成功！')
+    } else {
+      ElMessage.error(res.message || 'AI 估价生成失败，请重试')
+    }
+  } catch (error) {
+    console.error('AI 估价请求异常:', error)
+    ElMessage.error('网络请求失败，请确保后台 AI 网关服务已正常启动')
+  } finally {
+    // 5. 解除按钮禁用状态
+    isGeneratingAi.value = false
+  }
+}
 // 监听 Tab 切换，如果是 trend，需要 resize
 watch(activeTab, (val) => {
   if (val === 'trend') {
@@ -739,3 +811,348 @@ onUnmounted(() => {
 .desc-content { padding: 10px 0; }
 .desc-text { line-height: 1.8; color: #484848; font-size: 16px; white-space: pre-wrap; }
 </style>
+
+
+<!--<template>-->
+<!--  <div class="detail-container" v-if="car">-->
+<!--    <div class="breadcrumb">-->
+<!--      <span>{{ $t('nav.cars') }}</span>-->
+<!--      <el-icon><ArrowRight /></el-icon>-->
+<!--      <span>{{ car.brand }}</span>-->
+<!--      <el-icon><ArrowRight /></el-icon>-->
+<!--      <span class="current">{{ car.model }}</span>-->
+<!--    </div>-->
+
+<!--    <div class="main-content">-->
+<!--      <div class="gallery-section">-->
+<!--        <div class="main-image-box" @click="showImageViewer = true">-->
+<!--          <img :src="car.image || 'https://dummyimage.com/800x600/f5f5f5/999&text=No+Image'" class="main-img" />-->
+<!--          <div class="img-tag" v-if="car.conditionLevel === 1">{{ $t('car.condition_excellent') }}</div>-->
+<!--          <div class="view-btn"><el-icon><ZoomIn /></el-icon> 查看大图</div>-->
+<!--        </div>-->
+<!--        <el-image-viewer v-if="showImageViewer" @close="showImageViewer = false" :url-list="[car.image]" />-->
+<!--      </div>-->
+
+<!--      <div class="info-section flex flex-col">-->
+<!--        <h1 class="car-title">{{ car.brand }} {{ car.model }}</h1>-->
+
+<!--        <div class="price-card">-->
+<!--          <div class="price-main">-->
+<!--            <span class="currency">¥</span>-->
+<!--            <span class="amount">{{ car.price }}</span>-->
+<!--            <span class="unit">万</span>-->
+<!--          </div>-->
+<!--          <div class="price-sub">-->
+<!--            <span>新车指导价：{{ car.originalPrice }}万</span>-->
+<!--            <span class="ml-4">系统预估价：{{ car.estimatedPrice }}万</span>-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--        <div class="basic-params grid grid-cols-2 gap-4 mt-6">-->
+<!--          <div class="param-item">-->
+<!--            <span class="label">行驶里程</span>-->
+<!--            <span class="value">{{ car.mileage }} 万公里</span>-->
+<!--          </div>-->
+<!--          <div class="param-item">-->
+<!--            <span class="label">首次上牌</span>-->
+<!--            <span class="value">{{ car.buyYear }} 年</span>-->
+<!--          </div>-->
+<!--          <div class="param-item">-->
+<!--            <span class="label">排量/变速箱</span>-->
+<!--            <span class="value">{{ car.displacement || '&#45;&#45;' }} / {{ car.gearbox || '&#45;&#45;' }}</span>-->
+<!--          </div>-->
+<!--          <div class="param-item">-->
+<!--            <span class="label">过户次数</span>-->
+<!--            <span class="value">{{ car.transferCount }} 次</span>-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--        <div class="action-bar mt-8 flex gap-4">-->
+<!--          <el-button type="primary" size="large" class="flex-1" @click="handleBuy">立即购买</el-button>-->
+<!--          <el-button size="large" class="flex-1" @click="handleChat">联系卖家</el-button>-->
+<!--        </div>-->
+
+<!--        <div class="ai-valuation-section mt-8 border-t border-gray-100 pt-6">-->
+<!--          <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center">-->
+<!--            <span class="text-purple-600 mr-2 text-xl">✨</span> AI 智能评估-->
+<!--          </h3>-->
+
+<!--          <div v-if="!aiReport">-->
+<!--            <button-->
+<!--                @click="generateAiReport"-->
+<!--                :disabled="isGeneratingAi"-->
+<!--                class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center transition-all duration-300"-->
+<!--                :class="{ 'opacity-70 cursor-not-allowed': isGeneratingAi }"-->
+<!--            >-->
+<!--              <el-icon v-if="isGeneratingAi" class="is-loading mr-2"><Loading /></el-icon>-->
+<!--              <span v-else class="mr-2">🤖</span>-->
+<!--              {{ isGeneratingAi ? 'AI 正在深度分析车况特征，请稍候...' : '免费获取 AI 智能估价报告' }}-->
+<!--            </button>-->
+<!--          </div>-->
+
+<!--          <div v-else class="bg-purple-50 p-5 rounded-lg border border-purple-100 shadow-sm transition-all duration-500 ease-in-out">-->
+<!--            <h4 class="text-purple-800 font-bold mb-3 flex items-center border-b border-purple-200 pb-2">-->
+<!--              <span class="mr-2 text-lg">📝</span> 评估报告已生成-->
+<!--            </h4>-->
+<!--            <div class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap font-sans">-->
+<!--              {{ aiReport }}-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--    <div class="report-section mt-12">-->
+<!--      <h2 class="section-title">权威检测报告</h2>-->
+<!--      <div class="report-content flex gap-8 p-6 bg-gray-50 rounded-lg">-->
+<!--        <div class="score-circle shrink-0">-->
+<!--          <div class="score">{{ car.conditionLevel === 1 ? 98 : car.conditionLevel === 2 ? 85 : 70 }}</div>-->
+<!--          <div class="label">综合得分</div>-->
+<!--        </div>-->
+<!--        <div class="report-summary flex-1">-->
+<!--          <h3>平台官方认证车源</h3>-->
+<!--          <p>经检测，该车排除重大事故、火烧、水泡。发动机变速箱工况正常，外观内饰符合其车龄及里程的正常损耗。</p>-->
+<!--          <div class="core-check">-->
+<!--            <div class="check-item pass"><el-icon><Select /></el-icon> 无重大事故</div>-->
+<!--            <div class="check-item pass"><el-icon><Select /></el-icon> 无火烧</div>-->
+<!--            <div class="check-item pass"><el-icon><Select /></el-icon> 无水泡</div>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</template>-->
+
+<!--<script setup>-->
+<!--import { ref, onMounted } from 'vue'-->
+<!--import { useRoute, useRouter } from 'vue-router'-->
+<!--import { ArrowRight, ZoomIn, Select, Loading } from '@element-plus/icons-vue'-->
+<!--import { ElMessage } from 'element-plus'-->
+<!--import axios from 'axios'-->
+
+<!--const route = useRoute()-->
+<!--const router = useRouter()-->
+<!--const car = ref(null)-->
+<!--const showImageViewer = ref(false)-->
+
+<!--// 获取车辆详情-->
+<!--const fetchCarDetail = async () => {-->
+<!--  try {-->
+<!--    const id = route.params.id-->
+<!--    const token = localStorage.getItem('token') || ''-->
+
+<!--    // 发起 GET 请求并手动携带 Token，方便后端记录用户足迹-->
+<!--    const response = await axios.get(`/api/car/${id}`, {-->
+<!--      headers: { Authorization: token }-->
+<!--    })-->
+
+<!--    const res = response.data // axios 返回的数据包在 data 属性里-->
+
+<!--    if (res.code === 200) {-->
+<!--      car.value = res.data-->
+<!--    } else {-->
+<!--      ElMessage.error(res.message || '获取车辆详情失败')-->
+<!--    }-->
+<!--  } catch (error) {-->
+<!--    ElMessage.error('请求异常，获取车辆详情失败')-->
+<!--  }-->
+<!--}-->
+
+<!--// 立即购买操作-->
+<!--const handleBuy = () => {-->
+<!--  const token = localStorage.getItem('token')-->
+<!--  if (!token) {-->
+<!--    ElMessage.warning('请先登录系统')-->
+<!--    router.push('/login')-->
+<!--    return-->
+<!--  }-->
+<!--  ElMessage.success('正在为您锁定车源...')-->
+<!--  // TODO: 调用后端下单接口-->
+<!--}-->
+
+<!--// 联系卖家操作-->
+<!--const handleChat = () => {-->
+<!--  const token = localStorage.getItem('token')-->
+<!--  if (!token) {-->
+<!--    ElMessage.warning('请先登录系统')-->
+<!--    router.push('/login')-->
+<!--    return-->
+<!--  }-->
+<!--  router.push({ path: '/messages', query: { targetId: car.value.userId } })-->
+<!--}-->
+
+<!--// ================= 新增：AI 估价模块逻辑 =================-->
+<!--const isGeneratingAi = ref(false)-->
+<!--const aiReport = ref('')-->
+
+<!--const generateAiReport = async () => {-->
+<!--  if (!car.value || !car.value.id) {-->
+<!--    ElMessage.warning('车辆数据尚未加载完毕，请稍后再试')-->
+<!--    return-->
+<!--  }-->
+
+<!--  const token = localStorage.getItem('token')-->
+<!--  if (!token) {-->
+<!--    ElMessage.warning('请先登录系统后再获取估价报告')-->
+<!--    router.push('/login')-->
+<!--    return-->
+<!--  }-->
+
+<!--  isGeneratingAi.value = true-->
+<!--  try {-->
+<!--    // 发起 POST 请求调用估价接口，手动携带 Token-->
+<!--    const response = await axios.post(`/api/ai/valuation/${car.value.id}`, {}, {-->
+<!--      headers: { Authorization: token }-->
+<!--    })-->
+
+<!--    const res = response.data-->
+
+<!--    if (res.code === 200) {-->
+<!--      aiReport.value = res.data-->
+<!--      ElMessage.success('AI 评估报告生成成功！')-->
+<!--    } else {-->
+<!--      ElMessage.error(res.message || 'AI 估价生成失败，请重试')-->
+<!--    }-->
+<!--  } catch (error) {-->
+<!--    console.error('AI 估价请求异常:', error)-->
+<!--    ElMessage.error('网络请求失败，请确保后台 AI 网关服务已正常启动')-->
+<!--  } finally {-->
+<!--    isGeneratingAi.value = false-->
+<!--  }-->
+<!--}-->
+<!--// ================= 新增结束 =================-->
+
+<!--onMounted(() => {-->
+<!--  fetchCarDetail()-->
+<!--})-->
+<!--</script>-->
+
+<!--<style scoped>-->
+<!--.detail-container {-->
+<!--  max-width: 1200px;-->
+<!--  margin: 0 auto;-->
+<!--  padding: 24px;-->
+<!--}-->
+<!--.breadcrumb {-->
+<!--  display: flex;-->
+<!--  align-items: center;-->
+<!--  gap: 8px;-->
+<!--  color: #666;-->
+<!--  font-size: 14px;-->
+<!--  margin-bottom: 24px;-->
+<!--}-->
+<!--.breadcrumb .current {-->
+<!--  color: #333;-->
+<!--  font-weight: 600;-->
+<!--}-->
+<!--.main-content {-->
+<!--  display: grid;-->
+<!--  grid-template-columns: 600px 1fr;-->
+<!--  gap: 40px;-->
+<!--}-->
+<!--.main-image-box {-->
+<!--  position: relative;-->
+<!--  width: 100%;-->
+<!--  height: 450px;-->
+<!--  border-radius: 12px;-->
+<!--  overflow: hidden;-->
+<!--  cursor: pointer;-->
+<!--  background: #f5f5f5;-->
+<!--}-->
+<!--.main-image-box .main-img {-->
+<!--  width: 100%;-->
+<!--  height: 100%;-->
+<!--  object-fit: cover;-->
+<!--  transition: transform 0.3s;-->
+<!--}-->
+<!--.main-image-box:hover .main-img {-->
+<!--  transform: scale(1.02);-->
+<!--}-->
+<!--.img-tag {-->
+<!--  position: absolute;-->
+<!--  top: 16px;-->
+<!--  left: 16px;-->
+<!--  background: #ff385c;-->
+<!--  color: #fff;-->
+<!--  padding: 4px 12px;-->
+<!--  border-radius: 4px;-->
+<!--  font-size: 14px;-->
+<!--  font-weight: bold;-->
+<!--}-->
+<!--.view-btn {-->
+<!--  position: absolute;-->
+<!--  bottom: 16px;-->
+<!--  right: 16px;-->
+<!--  background: rgba(0,0,0,0.6);-->
+<!--  color: #fff;-->
+<!--  padding: 6px 16px;-->
+<!--  border-radius: 20px;-->
+<!--  font-size: 14px;-->
+<!--  display: flex;-->
+<!--  align-items: center;-->
+<!--  gap: 4px;-->
+<!--}-->
+<!--.car-title {-->
+<!--  font-size: 28px;-->
+<!--  font-weight: 800;-->
+<!--  color: #222;-->
+<!--  margin: 0 0 16px 0;-->
+<!--  line-height: 1.4;-->
+<!--}-->
+<!--.price-card {-->
+<!--  background: #fdf5f6;-->
+<!--  border-radius: 8px;-->
+<!--  padding: 20px;-->
+<!--  color: #ff385c;-->
+<!--}-->
+<!--.price-main {-->
+<!--  display: flex;-->
+<!--  align-items: baseline;-->
+<!--  gap: 4px;-->
+<!--  margin-bottom: 8px;-->
+<!--}-->
+<!--.price-main .currency { font-size: 20px; font-weight: bold; }-->
+<!--.price-main .amount { font-size: 40px; font-weight: 900; line-height: 1; }-->
+<!--.price-main .unit { font-size: 16px; font-weight: normal; }-->
+<!--.price-sub {-->
+<!--  color: #666;-->
+<!--  font-size: 14px;-->
+<!--}-->
+<!--.param-item {-->
+<!--  display: flex;-->
+<!--  flex-direction: column;-->
+<!--  gap: 4px;-->
+<!--}-->
+<!--.param-item .label {-->
+<!--  color: #999;-->
+<!--  font-size: 13px;-->
+<!--}-->
+<!--.param-item .value {-->
+<!--  color: #333;-->
+<!--  font-size: 16px;-->
+<!--  font-weight: 600;-->
+<!--}-->
+<!--.section-title {-->
+<!--  font-size: 24px;-->
+<!--  font-weight: bold;-->
+<!--  color: #333;-->
+<!--  margin-bottom: 24px;-->
+<!--}-->
+<!--.score-circle {-->
+<!--  width: 100px; height: 100px;-->
+<!--  border-radius: 50%;-->
+<!--  border: 4px solid #67C23A;-->
+<!--  display: flex;-->
+<!--  flex-direction: column;-->
+<!--  align-items: center;-->
+<!--  justify-content: center;-->
+<!--  color: #67C23A;-->
+<!--}-->
+<!--.score-circle .score { font-size: 32px; font-weight: 800; line-height: 1; }-->
+<!--.score-circle .label { font-size: 12px; margin-top: 4px; }-->
+<!--.report-summary h3 { margin: 0 0 8px 0; font-size: 18px; }-->
+<!--.report-summary p { color: #717171; font-size: 14px; margin: 0 0 16px 0; }-->
+<!--.core-check { display: flex; gap: 24px; }-->
+<!--.check-item { display: flex; align-items: center; gap: 6px; font-weight: 600; }-->
+<!--.check-item.pass { color: #67C23A; }-->
+<!--</style>-->

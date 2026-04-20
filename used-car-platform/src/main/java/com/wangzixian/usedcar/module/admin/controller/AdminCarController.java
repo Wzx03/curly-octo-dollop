@@ -55,31 +55,25 @@ public class AdminCarController {
     ) {
         Page<Car> pageParam = new Page<>(page, size);
         LambdaQueryWrapper<Car> wrapper = new LambdaQueryWrapper<>();
-        
         if (keyword != null && !keyword.isEmpty()) {
             wrapper.and(w -> w.like(Car::getBrand, keyword)
                             .or().like(Car::getModel, keyword));
         }
-
         if (status != null) {
             wrapper.eq(Car::getStatus, status);
         }
-        
         wrapper.orderByDesc(Car::getCreateTime);
         return Result.success(carService.page(pageParam, wrapper));
     }
-
     @Log(title = "审核通过", businessType = 2)
     @PostMapping("/approve/{id}")
     public Result<String> approve(@PathVariable Long id) {
         Car car = carService.getById(id);
         if (car == null) return Result.error("车辆不存在");
-        
         car.setStatus(1);
         carService.updateById(car);
         return Result.success("审核通过，已上架");
     }
-    
     @Log(title = "批量审核通过", businessType = 2)
     @PostMapping("/batch-approve")
     public Result<String> batchApprove(@RequestBody List<Long> ids) {

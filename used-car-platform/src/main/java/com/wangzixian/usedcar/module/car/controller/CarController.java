@@ -69,32 +69,23 @@ public class CarController {
     public Result publish(@RequestBody Car car, @RequestHeader("token") String token) {
         Long userId = getUserIdFromToken(token);
         if (userId == null) return Result.error("无效的Token");
-
         int currentYear = LocalDateTime.now().getYear();
         if (car.getBuyYear() != null && car.getBuyYear() > currentYear) {
             return Result.error("购买年份不能超过当前年份");
         }
-
         car.setUserId(userId);
         car.setStatus(0);
         car.setCreateTime(LocalDateTime.now());
-
         if (car.getConditionGrade() == null) car.setConditionGrade("B");
         if (car.getTransferCount() == null) car.setTransferCount(0);
         if (car.getMaintenanceType() == null) car.setMaintenanceType("SHOP");
         if (car.getCity() == null) car.setCity("其他");
-        
         if (car.getDisplacement() == null) car.setDisplacement("2.0T");
         if (car.getGearbox() == null) car.setGearbox("自动");
-
         Double price = valuationEngine.assess(car);
         car.setEstimatedPrice(price);
-
         carService.save(car);
-        
-        // 清除首页缓存
-        redisUtil.delete(HOME_LIST_CACHE_KEY);
-        
+        redisUtil.delete(HOME_LIST_CACHE_KEY);//清掉首页缓存
         return Result.success("发布成功，等待审核");
     }
 

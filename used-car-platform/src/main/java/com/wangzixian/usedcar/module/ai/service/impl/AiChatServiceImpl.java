@@ -24,7 +24,7 @@ public class AiChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessag
     private static final Integer AI_CHAT_TYPE = 10; // 区分于普通P2P聊天
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+//    @Transactional(rollbackFor = Exception.class)
     public String processUserMessage(Long userId, String userContent) {
         // 1. 保存用户的提问记录
         ChatMessage userMsg = new ChatMessage();
@@ -36,24 +36,18 @@ public class AiChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessag
         userMsg.setIsRead(1);
         userMsg.setCreateTime(LocalDateTime.now());
         chatMessageMapper.insert(userMsg);
-
         // 2. 加载最近历史上下文（取最近10条防止Token超限）
         List<ChatMessage> historyList = getAiChatHistory(userId);
-
         // 3. 构建大模型标准请求格式
         List<Map<String, String>> messages = new ArrayList<>();
-
         // 压入系统提示词 (System Prompt)，巩固二手车客服人设
         messages.add(Map.of("role", "system", "content", "你是一名专业的二手车平台智能交易顾问。请解答用户关于购车流程、车辆参数的问题。如果用户询问代码或系统架构，请礼貌地拒绝。"));
-
         // 压入历史上下文
         for (ChatMessage msg : historyList) {
             messages.add(Map.of("role", msg.getRole(), "content", msg.getContent()));
         }
-
         // 4. 发起 HTTP 调用
         String aiResponseText = aiApiClient.chatWithHistory(messages);
-
         // 5. 保存 AI 的回复记录
         ChatMessage aiMsg = new ChatMessage();
         aiMsg.setSenderId(SYSTEM_AI_ID);
@@ -64,7 +58,6 @@ public class AiChatServiceImpl extends ServiceImpl<ChatMessageMapper, ChatMessag
         aiMsg.setIsRead(0);
         aiMsg.setCreateTime(LocalDateTime.now());
         chatMessageMapper.insert(aiMsg);
-
         return aiResponseText;
     }
 

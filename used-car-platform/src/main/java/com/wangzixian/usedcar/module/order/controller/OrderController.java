@@ -9,6 +9,7 @@ import com.wangzixian.usedcar.module.order.entity.Order;
 import com.wangzixian.usedcar.module.order.service.OrderService;
 import com.wangzixian.usedcar.module.order.vo.OrderVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
-
+    @PreAuthorize("hasAnyRole('0','1')")
     @PostMapping("/create")
     @RateLimit(time = 1, count = 1)
     public Result<String> create(@RequestBody CreateOrderDTO createOrderDTO, @RequestHeader("token") String token) {

@@ -3,10 +3,14 @@ package com.wangzixian.usedcar.common;
 import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTUtil;
 import cn.hutool.jwt.signers.JWTSignerUtil;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
+@Component
 public class JwtUtils {
 
     // 密钥 (正式上线要写复杂点)
@@ -51,5 +55,19 @@ public class JwtUtils {
         } catch (Exception e) {
             return false; // 只要出异常，统统算验证失败
         }
+    }
+
+    public String generateToken(Long userId, Integer role) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role); // 将角色标识存入 Token
+
+        return Jwts.builder()
+                .setClaims(claims) // 设置自定义载荷
+                .setSubject(String.valueOf(userId)) // 设置主体(通常存用户ID或用户名)
+                .setIssuedAt(new Date()) // 签发时间
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 过期时间(例如24小时)
+                // 请将 "YOUR_SECRET_KEY" 替换成你原本代码里用的秘钥变量
+                .signWith(SignatureAlgorithm.HS512, "YOUR_SECRET_KEY")
+                .compact();
     }
 }

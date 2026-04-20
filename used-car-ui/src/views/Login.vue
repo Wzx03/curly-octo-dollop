@@ -55,6 +55,11 @@
           <el-button type="primary" class="w-full shadow-lg shadow-blue-500/30" round :loading="loading" @click="handleLogin">
             登 录
           </el-button>
+
+          <el-button class="w-full mt-4" round plain @click="handleGuestLogin">
+            免登录，先逛逛
+          </el-button>
+
         </el-form>
 
         <el-form
@@ -100,11 +105,36 @@ const isLogin = ref(true)
 const loading = ref(false)
 const loginFormRef = ref(null)
 const registerFormRef = ref(null)
+// const userStore = userUserStore
+const handleGuestLogin = async () => {
+  try {
+    // 统一使用 axios 进行请求
+    const res = await axios.post('/api/auth/guest-login')
 
+    // axios 的返回值结构是 res.data
+    if (res.data.code === 200) {
+      const token = res.data.data
+
+      // 1. 将 Token 存入本地 (复用你原本写好的 auth 工具)
+      addAccount(token)
+
+      // 2. 如果你有 Pinia，可以在这里解析角色并存入状态管理
+      // userStore.setToken(token)
+      // userStore.fetchUserInfo()
+
+      // 3. 跳转到二手车大厅首页 (注意：你下方正常登录跳的是 '/cars'，这里统一一下)
+      router.push('/cars')
+      ElMessage.success('已作为游客身份进入平台')
+    } else {
+      ElMessage.error(res.data.msg || '获取游客身份失败')
+    }
+  } catch (error) {
+    ElMessage.error('网络或服务器错误，请稍后重试')
+  }
+}
 // 切换登录/注册模式
 const toggleMode = () => {
   isLogin.value = !isLogin.value
-  // 切换时重置表单状态
   if (isLogin.value) {
     registerFormRef.value?.resetFields()
   } else {

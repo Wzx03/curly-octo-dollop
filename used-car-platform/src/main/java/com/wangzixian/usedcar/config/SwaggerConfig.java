@@ -16,6 +16,6 @@ public class SwaggerConfig {
                         .title("二手车交易平台 API 文档")
                         .version("1.0")
                         .description("基于 Spring Boot 3 + Vue 3 的全栈项目")
-                        .contact(new Contact().name("王自贤").email("wangzixian@example.com")));
+                        .contact(new Contact().name("WangZiXian").email("wangzixian@example.com")));
     }
 }
