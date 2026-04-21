@@ -3,6 +3,7 @@ package com.wangzixian.usedcar.common;
 import cn.hutool.jwt.JWT;
 import cn.hutool.jwt.JWTUtil;
 import cn.hutool.jwt.signers.JWTSignerUtil;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,9 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import static javax.crypto.Cipher.SECRET_KEY;
+
 @Component
 public class JwtUtils {
 
@@ -69,5 +73,19 @@ public class JwtUtils {
                 // 请将 "YOUR_SECRET_KEY" 替换成你原本代码里用的秘钥变量
                 .signWith(SignatureAlgorithm.HS512, "YOUR_SECRET_KEY")
                 .compact();
+    }
+
+    public static Integer getRoleFromToken(String token) {
+        try {
+            // 解析 Claims
+            Claims claims = Jwts.parser()
+                    .setSigningKey("YOUR_SECRET_KEY") // 使用你定义的密钥
+                    .parseClaimsJws(token)
+                    .getBody();
+            // 返回 role 字段
+            return (Integer) claims.get("role");
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

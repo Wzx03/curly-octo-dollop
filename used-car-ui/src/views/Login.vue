@@ -109,20 +109,20 @@ const registerFormRef = ref(null)
 const handleGuestLogin = async () => {
   try {
     // 统一使用 axios 进行请求
-    const res = await axios.post('/api/auth/guest-login')
+    const res = await axios.post('/api/auth/guestLogin')
 
     // axios 的返回值结构是 res.data
     if (res.data.code === 200) {
       const token = res.data.data
 
-      // 1. 将 Token 存入本地 (复用你原本写好的 auth 工具)
+      // 1. 将 Token 存入本地
       addAccount(token)
 
       // 2. 如果你有 Pinia，可以在这里解析角色并存入状态管理
-      // userStore.setToken(token)
-      // userStore.fetchUserInfo()
+       userStore.setToken(token)
+       userStore.fetchUserInfo()
 
-      // 3. 跳转到二手车大厅首页 (注意：你下方正常登录跳的是 '/cars'，这里统一一下)
+      // 3. 跳转到二手车大厅首页
       router.push('/cars')
       ElMessage.success('已作为游客身份进入平台')
     } else {

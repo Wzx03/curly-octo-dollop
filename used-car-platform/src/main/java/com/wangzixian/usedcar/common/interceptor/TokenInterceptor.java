@@ -21,6 +21,13 @@ public class TokenInterceptor implements HandlerInterceptor {
         if("OPTIONS".equals(method)) {
             return true;
         }
+        String token = request.getHeader("token");
+        if (role != null && role ==3){
+            if (!"GET".equalsIgnoreCase(method)) {
+                sendErrorResponse(response, "游客权限受限，请先绑定手机号注册！");
+                return false;
+            }
+        }
 
         // 2. 公开接口放行 (车辆列表、车辆详情、文章列表、文章详情)
         // 注意：只放行 GET 请求，防止 POST/PUT/DELETE 被绕过

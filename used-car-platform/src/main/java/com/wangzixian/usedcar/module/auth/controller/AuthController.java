@@ -42,7 +42,7 @@ public class AuthController {
     * post
     * */
     @PostMapping("/guestLogin")
-    public Result<String> guestLogin(BindingResult bindingResult) {
+    public Result<String> guestLogin() {
         //使用uuid生成游客标识
         String uuid = IdUtil.fastSimpleUUID().substring(0, 8);
         String guestUsername = "guest_" + uuid;
